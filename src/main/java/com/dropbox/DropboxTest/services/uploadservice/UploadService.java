@@ -1,14 +1,11 @@
 package com.dropbox.DropboxTest.services.uploadservice;
 
-import com.dropbox.DropboxTest.models.FileModel;
-
-import java.io.File;
-import java.util.List;
+import org.springframework.web.multipart.MultipartFile;
 
 public interface UploadService {
-    String upload(File file, String fileName);
+    String upload(MultipartFile file);
 
-    boolean removeFile(String fileId);
+    boolean removeFile(String key);
 
-    String getSignedUrl(String fileId);
+    String getSignedUrl(String key);
 }

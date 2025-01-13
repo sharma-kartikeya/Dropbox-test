@@ -1,17 +1,23 @@
 package com.dropbox.DropboxTest.services.userservice;
 
-import com.dropbox.DropboxTest.models.UserModel;
+import com.dropbox.DropboxTest.models.User;
 import lombok.NonNull;
 
 import java.util.List;
 
 public interface UserService {
 
-    @NonNull UserModel createUser(@NonNull String name, @NonNull String email, String phone);
+    @NonNull
+    User createUser(@NonNull String name, @NonNull String email, @NonNull String password, String phone);
 
-    @NonNull UserModel getUser(@NonNull String id);
+    User authenticateUser(@NonNull String email, @NonNull String password);
 
-    UserModel getUserByEmail(@NonNull String email);
+    @NonNull List<User> getAllUsers();
+
+    @NonNull
+    User getUser(@NonNull String id);
+
+    User getUserByEmail(@NonNull String email);
 
     @NonNull List<String> getAllUserFiles(@NonNull String id);
 
