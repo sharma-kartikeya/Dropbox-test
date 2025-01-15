@@ -2,7 +2,6 @@ package com.dropbox.DropboxTest.configs;
 
 import com.dropbox.DropboxTest.models.User;
 import com.dropbox.DropboxTest.repositories.UserRepository;
-import com.dropbox.DropboxTest.services.userservice.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

@@ -1,5 +1,6 @@
 package com.dropbox.DropboxTest.services.userservice;
 
+import com.dropbox.DropboxTest.models.Directory;
 import com.dropbox.DropboxTest.models.User;
 import lombok.NonNull;
 
@@ -19,7 +20,5 @@ public interface UserService {
 
     User getUserByEmail(@NonNull String email);
 
-    @NonNull List<String> getAllUserFiles(@NonNull String id);
-
-    @NonNull List<String> getAllSharedFiles(@NonNull String id);
+    boolean deleteAllUsers();
 }

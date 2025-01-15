@@ -1,9 +1,11 @@
 package com.dropbox.DropboxTest.configs;
 
+import com.dropbox.DropboxTest.models.User;
 import com.dropbox.DropboxTest.utils.JwtUtils;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,26 +39,35 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(@NonNull HttpServletRequest request,
                                     @NonNull HttpServletResponse response,
                                     @NonNull FilterChain filterChain) throws ServletException, IOException {
-        final String authHeader = request.getHeader("Authentication");
+        Cookie[] cookies = request.getCookies();
 
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+        String token = null;
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("at".equals(cookie.getName())) {
+                    token = cookie.getValue(); // Get the token from the cookie
+                    break;
+                }
+            }
+        }
+
+        if (token == null) {
             filterChain.doFilter(request, response);
             return;
         }
         try {
-            final String token = authHeader.substring(7);
             Claims claims = jwtUtils.getClaimsFromToken(token);
             final String email = claims.getSubject();
             final boolean isExpired = claims.getExpiration().before(new Date());
 
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
-            if(email != null && auth == null) {
+            if (email != null && auth == null) {
                 UserDetails userDetails = userDetailsService.loadUserByUsername(email);
-                if(userDetails.getUsername().equals(email) && !isExpired) {
+                if (userDetails.getUsername().equals(email) && !isExpired) {
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                            userDetails,
-                            null,
+                            userDetails.getUsername(),
+                            userDetails.getPassword(),
                             userDetails.getAuthorities()
                     );
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));

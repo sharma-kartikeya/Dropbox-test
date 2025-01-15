@@ -40,7 +40,7 @@ public class UserServiceImpl implements UserService {
             user.setEmail(email);
             user.setPassword(passwordEncoder.encode(password));
             user.setPhone(phone);
-            if(email.equals("s.kartikeya18@gmail.com")) {
+            if (email.equals("s.kartikeya18@gmail.com")) {
                 user.setRole(UserRole.ADMIN);
             } else {
                 user.setRole(UserRole.USER);
@@ -84,12 +84,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public @NonNull List<String> getAllUserFiles(@NonNull String id) {
-        return List.of();
-    }
-
-    @Override
-    public @NonNull List<String> getAllSharedFiles(@NonNull String id) {
-        return List.of();
+    public boolean deleteAllUsers() {
+        try {
+            userRepository.deleteAllByRoleNotLike(UserRole.ADMIN);
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 }

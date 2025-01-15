@@ -1,11 +1,14 @@
 package com.dropbox.DropboxTest.controllers.file;
 
+import com.dropbox.DropboxTest.controllers.BaseResponse;
 import com.dropbox.DropboxTest.controllers.file.requests.FolderCreationRequest;
+import com.dropbox.DropboxTest.controllers.file.responses.DirectoryResponse;
 import com.dropbox.DropboxTest.models.Directory;
 import com.dropbox.DropboxTest.models.User;
 import com.dropbox.DropboxTest.models.UserRole;
 import com.dropbox.DropboxTest.services.fileservice.DirectoryService;
 import com.dropbox.DropboxTest.services.uploadservice.UploadService;
+import com.dropbox.DropboxTest.services.userservice.UserService;
 import com.dropbox.DropboxTest.utils.AuthUtils;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,10 +27,14 @@ public class FileController {
     private DirectoryService directoryService;
     @Autowired
     private UploadService uploadService;
+    @Autowired
+    private AuthUtils authUtils;
+    @Autowired
+    private UserService userService;
 
     @PostMapping(path = "upload")
-    public ResponseEntity<String> uploadFile(@RequestParam MultipartFile file,
-                                             @RequestParam String folderId) {
+    public ResponseEntity<BaseResponse<DirectoryResponse>> uploadFile(@RequestParam MultipartFile file,
+                                                                      @RequestParam String folderId) {
         try {
             if (file.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
@@ -40,46 +47,88 @@ public class FileController {
                 uploadService.removeFile(key);
                 throw e;
             }
-            return ResponseEntity.ok(directory.getId());
+            return ResponseEntity.ok(BaseResponse.<DirectoryResponse>builder()
+                    .setData(new DirectoryResponse(directory))
+                    .build()
+            );
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(BaseResponse.<DirectoryResponse>builder()
+                    .setError("Something went wrong!")
+                    .build()
+            );
         }
     }
 
     @PostMapping(path = "create-folder")
-    public ResponseEntity<String> createFolder(@RequestBody @Valid FolderCreationRequest request) {
+    public ResponseEntity<BaseResponse<DirectoryResponse>> createFolder(@RequestBody @Valid FolderCreationRequest request) {
         try {
             Directory directory = directoryService.createDirectory(request.getName(), request.getParentFolderId());
-            return ResponseEntity.ok(directory.getId());
+            return ResponseEntity.ok(BaseResponse.<DirectoryResponse>builder()
+                    .setData(new DirectoryResponse(directory))
+                    .build()
+            );
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(BaseResponse.<DirectoryResponse>builder()
+                            .setError("Some thing went wrong!")
+                            .build()
+                    );
+        }
+    }
+
+    @GetMapping(path = "folder")
+    public ResponseEntity<BaseResponse<List<DirectoryResponse>>> getFolders(@RequestParam String folderId) {
+        try {
+            String folderID = folderId;
+            if (folderID == null) {
+                User user = authUtils.getCurrentUser();
+                folderID = user.getRootDirectory().getId();
+            }
+            List<Directory> directories = directoryService.getChildren(folderID);
+            List<DirectoryResponse> directoriesResponse = directories
+                    .stream()
+                    .map(DirectoryResponse::new)
+                    .toList();
+            return ResponseEntity.ok(
+                    BaseResponse.<List<DirectoryResponse>>builder()
+                            .setData(directoriesResponse)
+                            .build()
+            );
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(BaseResponse.<List<DirectoryResponse>>builder()
+                            .setError("Something went wrong!")
+                            .build()
+                    );
         }
     }
 
     @GetMapping(path = "all")
-    public ResponseEntity<List<Directory>> getAll() {
+    public ResponseEntity<BaseResponse<List<DirectoryResponse>>> getAll() {
         try {
-            User user = AuthUtils.getCurrentUser();
-            if(!user.getRole().equals(UserRole.ADMIN)) {
+            User user = authUtils.getCurrentUser();
+            if (!user.getRole().equals(UserRole.ADMIN)) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
             }
-            return ResponseEntity.ok(directoryService.getAllDirectories());
+            List<Directory> directories = directoryService.getAllDirectories();
+            List<DirectoryResponse> directoryResponses = directories.stream().map(DirectoryResponse::new).toList();
+            return ResponseEntity.ok(
+                    BaseResponse.<List<DirectoryResponse>>builder()
+                            .setData(directoryResponses)
+                            .build()
+            );
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        }
-    }
-
-    @PostMapping(path = "children")
-    public ResponseEntity<List<Directory>> getChildren(@RequestParam String folderId) {
-        try {
-            List<Directory> children = directoryService.getChildren(folderId);
-            return ResponseEntity.ok(children);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(BaseResponse.<List<DirectoryResponse>>builder()
+                            .setError("Something went wrong").build()
+                    );
         }
     }
 
