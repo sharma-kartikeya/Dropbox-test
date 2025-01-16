@@ -5,6 +5,8 @@ import com.dropbox.DropboxTest.services.uploadservice.clients.StoreClientFactory
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Map;
+
 @Service
 public class UploadServiceImpl implements UploadService {
 
@@ -33,7 +35,12 @@ public class UploadServiceImpl implements UploadService {
     }
 
     @Override
-    public String getSignedUrl(String fileId) {
-        return "";
+    public String getSignedUrl(String key) {
+        return this.storeClient.getSignedUrl(key);
+    }
+
+    @Override
+    public String putSignedUrl(String key, Map<String, String> metadata) {
+        return this.storeClient.putSignedUrl(key, metadata);
     }
 }

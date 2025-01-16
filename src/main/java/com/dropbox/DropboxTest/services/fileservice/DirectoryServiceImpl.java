@@ -1,7 +1,9 @@
 package com.dropbox.DropboxTest.services.fileservice;
 
 import com.dropbox.DropboxTest.models.Directory;
+import com.dropbox.DropboxTest.models.User;
 import com.dropbox.DropboxTest.repositories.DirectoryRepository;
+import com.dropbox.DropboxTest.utils.AuthUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -12,13 +14,14 @@ public class DirectoryServiceImpl implements DirectoryService {
     @Autowired
     private DirectoryRepository directoryRepository;
 
+
     @Override
     public Directory createDirectory(String name, String parentId) {
         try {
             Directory parentDirectory = null;
-            if(parentId != null) {
+            if (parentId != null) {
                 parentDirectory = directoryRepository.findById(parentId).orElse(null);
-                if(parentDirectory == null) {
+                if (parentDirectory == null) {
                     throw new RuntimeException("Parent directory not found");
                 }
             }
@@ -36,7 +39,7 @@ public class DirectoryServiceImpl implements DirectoryService {
     public Directory createFile(String name, String parentId, String key) {
         try {
             Directory directory = directoryRepository.findById(parentId).orElse(null);
-            if(directory == null) {
+            if (directory == null) {
                 throw new RuntimeException("Parent directory not found");
             }
             Directory file = new Directory();
@@ -57,6 +60,15 @@ public class DirectoryServiceImpl implements DirectoryService {
     }
 
     @Override
+    public boolean checkOwner(String fileId, String userId) {
+        Directory directory = getDirectory(fileId);
+        if (directory == null) {
+            throw new RuntimeException("Directory not found");
+        }
+        return userId.equals(directory.getOwner().getId());
+    }
+
+    @Override
     public boolean checkRelated(String directoryId, String parentId) {
         return false;
     }
@@ -65,11 +77,11 @@ public class DirectoryServiceImpl implements DirectoryService {
     public void moveDirectory(String id, String targetParentId) {
         try {
             Directory directory = directoryRepository.findById(id).orElse(null);
-            if(directory == null) {
+            if (directory == null) {
                 throw new RuntimeException("Directory not found");
             }
             Directory targetDirectory = directoryRepository.findById(targetParentId).orElse(null);
-            if(targetDirectory == null) {
+            if (targetDirectory == null) {
                 throw new RuntimeException("Target directory not found");
             }
             directory.setParent(targetDirectory);

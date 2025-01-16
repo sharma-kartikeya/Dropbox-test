@@ -11,6 +11,8 @@ public interface DirectoryService {
 
     Directory getDirectory(String id);
 
+    boolean checkOwner(String fileId, String ownerId);
+
     boolean checkRelated(String directoryId, String parentId);
 
     void moveDirectory(String id, String targetParentId);

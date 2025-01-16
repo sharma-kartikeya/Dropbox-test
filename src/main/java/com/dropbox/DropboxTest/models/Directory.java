@@ -28,6 +28,11 @@ public class Directory {
     @JsonIgnore
     private Directory parent;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "owner_id")
+    @JsonIgnore
+    private User owner;
+
     @NonNull
     @Column(nullable = false)
     private Boolean isFile = false;
