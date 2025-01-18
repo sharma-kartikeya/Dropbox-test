@@ -17,7 +17,7 @@ public class UserDirectoryAccessServiceImpl implements UserDirectoryAccessServic
     @Autowired
     private UserDirectoryAccessRepository userDirectoryAccessRepository;
 
-    private Map<UserDirectoryAccessType, List<AccessParameter>> accessParametersMap;
+    private final Map<UserDirectoryAccessType, List<AccessParameter>> accessParametersMap;
 
     public UserDirectoryAccessServiceImpl() {
         accessParametersMap = new HashMap<>();
