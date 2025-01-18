@@ -1,6 +1,6 @@
 package com.dropbox.DropboxTest.configs;
 
-import com.dropbox.DropboxTest.models.User;
+import com.dropbox.DropboxTest.models.user.User;
 import com.dropbox.DropboxTest.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -22,7 +22,7 @@ public class ApplicationConfiguration {
     @Bean
     UserDetailsService userDetailsService() {
         return username -> {
-            User user = userRepository.findByEmail(username);
+            User user = userRepository.findByEmail(username).orElse(null);
             if (user == null) {
                 throw new UsernameNotFoundException(username);
             }

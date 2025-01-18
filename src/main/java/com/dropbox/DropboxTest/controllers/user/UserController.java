@@ -4,8 +4,13 @@ import com.dropbox.DropboxTest.controllers.BaseResponse;
 import com.dropbox.DropboxTest.controllers.user.requests.CreateUserRequest;
 import com.dropbox.DropboxTest.controllers.user.requests.LoginUserRequest;
 import com.dropbox.DropboxTest.controllers.user.responses.UserResponse;
-import com.dropbox.DropboxTest.models.User;
-import com.dropbox.DropboxTest.models.UserRole;
+import com.dropbox.DropboxTest.models.directory.Directory;
+import com.dropbox.DropboxTest.models.user.User;
+import com.dropbox.DropboxTest.models.user.UserRole;
+import com.dropbox.DropboxTest.models.userdirectory.UserDirectoryAccess;
+import com.dropbox.DropboxTest.services.directoryservice.DirectoryService;
+import com.dropbox.DropboxTest.services.userdirectorymetaservice.UserDirectoryAccessService;
+import com.dropbox.DropboxTest.services.userdirectorymetaservice.UserDirectoryAccessType;
 import com.dropbox.DropboxTest.services.userservice.UserService;
 import com.dropbox.DropboxTest.utils.AuthUtils;
 import com.dropbox.DropboxTest.utils.JwtUtils;
@@ -27,6 +32,12 @@ public class UserController {
     private UserService userService;
 
     @Autowired
+    private DirectoryService directoryService;
+
+    @Autowired
+    private UserDirectoryAccessService userDirectoryAccessService;
+
+    @Autowired
     private JwtUtils jwtUtils;
 
     @Autowired
@@ -35,11 +46,17 @@ public class UserController {
     @PostMapping(path = "signup")
     public ResponseEntity<BaseResponse<UserResponse>> createUser(@RequestBody @Valid CreateUserRequest createUserRequest, HttpServletResponse response) {
         try {
+
+            Directory rootDirectory = directoryService.createRootDirectory();
+
             User user = userService.createUser(
                     createUserRequest.getName(),
                     createUserRequest.getEmail(),
                     createUserRequest.getPassword(),
-                    createUserRequest.getPhone());
+                    createUserRequest.getPhone(),
+                    rootDirectory.getId());
+
+            UserDirectoryAccess access = userDirectoryAccessService.upsertUserDirectoryAccess(user.getId(), rootDirectory.getId(), UserDirectoryAccessType.OWNER);
 
             String token = jwtUtils.createToken(createUserRequest.getEmail());
 

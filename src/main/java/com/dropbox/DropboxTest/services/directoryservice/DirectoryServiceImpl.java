@@ -1,11 +1,11 @@
-package com.dropbox.DropboxTest.services.fileservice;
+package com.dropbox.DropboxTest.services.directoryservice;
 
-import com.dropbox.DropboxTest.models.Directory;
-import com.dropbox.DropboxTest.models.User;
+import com.dropbox.DropboxTest.models.directory.Directory;
 import com.dropbox.DropboxTest.repositories.DirectoryRepository;
-import com.dropbox.DropboxTest.utils.AuthUtils;
+import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -14,20 +14,32 @@ public class DirectoryServiceImpl implements DirectoryService {
     @Autowired
     private DirectoryRepository directoryRepository;
 
+    @Override
+    public Directory createRootDirectory() {
+        try {
+            Directory directory = new Directory();
+            directory.setName("Root");
+            directory.setParentId(null);
+            directory.setIsFile(false);
+            return directoryRepository.save(directory);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
+    }
 
     @Override
-    public Directory createDirectory(String name, String parentId) {
+    public Directory createDirectory(@NonNull String name, @NonNull String parentId) {
         try {
-            Directory parentDirectory = null;
-            if (parentId != null) {
-                parentDirectory = directoryRepository.findById(parentId).orElse(null);
-                if (parentDirectory == null) {
-                    throw new RuntimeException("Parent directory not found");
-                }
+            Directory parentDirectory = directoryRepository.findById(parentId).orElse(null);
+            if (parentDirectory == null) {
+                throw new RuntimeException("Parent directory not found");
             }
+
             Directory directory = new Directory();
             directory.setName(name);
-            directory.setParent(parentDirectory);
+            String parentDirectoryId = parentDirectory.getId();
+            directory.setParentId(parentDirectoryId);
             directoryRepository.save(directory);
             return directory;
         } catch (Exception e) {
@@ -36,7 +48,7 @@ public class DirectoryServiceImpl implements DirectoryService {
     }
 
     @Override
-    public Directory createFile(String name, String parentId, String key) {
+    public Directory createFile(@NonNull String name, @NonNull String parentId, @NonNull String key) {
         try {
             Directory directory = directoryRepository.findById(parentId).orElse(null);
             if (directory == null) {
@@ -44,7 +56,7 @@ public class DirectoryServiceImpl implements DirectoryService {
             }
             Directory file = new Directory();
             file.setName(name);
-            file.setParent(directory);
+            file.setParentId(parentId);
             file.setKey(key);
             file.setIsFile(true);
             directoryRepository.save(file);
@@ -60,20 +72,6 @@ public class DirectoryServiceImpl implements DirectoryService {
     }
 
     @Override
-    public boolean checkOwner(String fileId, String userId) {
-        Directory directory = getDirectory(fileId);
-        if (directory == null) {
-            throw new RuntimeException("Directory not found");
-        }
-        return userId.equals(directory.getOwner().getId());
-    }
-
-    @Override
-    public boolean checkRelated(String directoryId, String parentId) {
-        return false;
-    }
-
-    @Override
     public void moveDirectory(String id, String targetParentId) {
         try {
             Directory directory = directoryRepository.findById(id).orElse(null);
@@ -84,16 +82,33 @@ public class DirectoryServiceImpl implements DirectoryService {
             if (targetDirectory == null) {
                 throw new RuntimeException("Target directory not found");
             }
-            directory.setParent(targetDirectory);
+            directory.setParentId(targetDirectory.getId());
             directoryRepository.save(directory);
         } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Transactional
+    @Override
+    public void deleteDirectoryByCascade(String id) {
+        try {
+            directoryRepository.deleteDirectoryTree(id);
+        } catch (Exception e) {
+            e.printStackTrace();
             throw new RuntimeException(e);
         }
     }
 
     @Override
-    public void deleteDirectory(String id, boolean cascade) {
-        directoryRepository.deleteById(id);
+    public void deleteDirectories(List<String> id) {
+        try {
+            directoryRepository.deleteAllByIdInBatch(id);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -102,18 +117,18 @@ public class DirectoryServiceImpl implements DirectoryService {
     }
 
     @Override
-    public List<Directory> getAllChildren(String id) {
-        return List.of();
-    }
-
-    @Override
     public List<Directory> getPathDirectories(String id) {
         return directoryRepository.getPath(id);
     }
 
     @Override
-    public List<Directory> getAllDescendantsFiles(String id) {
-        return directoryRepository.getAllDescendantsFiles(id);
+    public List<Directory> getAllDescendantsDirectories(String id) {
+        try {
+            return directoryRepository.getAllDescendantsFiles(id);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
     }
 
     @Override

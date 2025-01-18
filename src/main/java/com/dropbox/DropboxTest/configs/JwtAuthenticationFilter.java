@@ -1,6 +1,5 @@
 package com.dropbox.DropboxTest.configs;
 
-import com.dropbox.DropboxTest.models.User;
 import com.dropbox.DropboxTest.utils.JwtUtils;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;

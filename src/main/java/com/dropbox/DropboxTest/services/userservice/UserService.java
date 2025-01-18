@@ -1,7 +1,6 @@
 package com.dropbox.DropboxTest.services.userservice;
 
-import com.dropbox.DropboxTest.models.Directory;
-import com.dropbox.DropboxTest.models.User;
+import com.dropbox.DropboxTest.models.user.User;
 import lombok.NonNull;
 
 import java.util.List;
@@ -9,7 +8,10 @@ import java.util.List;
 public interface UserService {
 
     @NonNull
-    User createUser(@NonNull String name, @NonNull String email, @NonNull String password, String phone);
+    User createUser(@NonNull String name,
+                    @NonNull String email,
+                    @NonNull String password, String phone,
+                    @NonNull String rootDirectoryId);
 
     User authenticateUser(@NonNull String email, @NonNull String password);
 
@@ -19,6 +21,8 @@ public interface UserService {
     User getUser(@NonNull String id);
 
     User getUserByEmail(@NonNull String email);
+
+    List<User> getUsersByEmails(@NonNull List<String> emails);
 
     boolean deleteAllUsers();
 }

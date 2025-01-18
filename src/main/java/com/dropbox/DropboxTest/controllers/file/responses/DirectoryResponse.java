@@ -1,6 +1,6 @@
 package com.dropbox.DropboxTest.controllers.file.responses;
 
-import com.dropbox.DropboxTest.models.Directory;
+import com.dropbox.DropboxTest.models.directory.Directory;
 import lombok.Data;
 import lombok.NonNull;
 

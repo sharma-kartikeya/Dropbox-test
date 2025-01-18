@@ -1,4 +1,4 @@
-package com.dropbox.DropboxTest.models;
+package com.dropbox.DropboxTest.models.user;
 
 import jakarta.persistence.*;
 import lombok.Data;
@@ -6,7 +6,6 @@ import lombok.NonNull;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
@@ -18,7 +17,7 @@ public class User implements UserDetails {
 
     @NonNull
     @Id
-    @Column(name = "id", nullable = false, updatable = false, unique = true)
+    @Column(nullable = false, updatable = false, unique = true)
     private String id;
 
     @NonNull
@@ -35,8 +34,9 @@ public class User implements UserDetails {
 
     private String phone;
 
-    @OneToOne
-    private Directory rootDirectory;
+    @NonNull
+    @Column(nullable = false, unique = true)
+    private String rootDirectoryId;
 
     @NonNull
     @Column(nullable = false)

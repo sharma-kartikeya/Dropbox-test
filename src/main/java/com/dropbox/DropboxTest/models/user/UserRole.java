@@ -1,4 +1,4 @@
-package com.dropbox.DropboxTest.models;
+package com.dropbox.DropboxTest.models.user;
 
 public enum UserRole {
     ADMIN,

@@ -1,10 +1,9 @@
 package com.dropbox.DropboxTest.services.userservice;
 
-import com.dropbox.DropboxTest.models.Directory;
-import com.dropbox.DropboxTest.models.User;
-import com.dropbox.DropboxTest.models.UserRole;
+import com.dropbox.DropboxTest.models.user.User;
+import com.dropbox.DropboxTest.models.user.UserRole;
 import com.dropbox.DropboxTest.repositories.UserRepository;
-import com.dropbox.DropboxTest.services.fileservice.DirectoryService;
+import com.dropbox.DropboxTest.services.directoryservice.DirectoryService;
 import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -21,9 +20,6 @@ public class UserServiceImpl implements UserService {
     private UserRepository userRepository;
 
     @Autowired
-    private DirectoryService directoryService;
-
-    @Autowired
     private PasswordEncoder passwordEncoder;
 
     @Autowired
@@ -33,21 +29,20 @@ public class UserServiceImpl implements UserService {
     public @NonNull User createUser(@NonNull String name,
                                     @NonNull String email,
                                     @NonNull String password,
-                                    String phone) {
+                                    String phone,
+                                    @NonNull String rootDirectoryId) {
         try {
             User user = new User();
             user.setName(name);
             user.setEmail(email);
             user.setPassword(passwordEncoder.encode(password));
             user.setPhone(phone);
+            user.setRootDirectoryId(rootDirectoryId);
             if (email.equals("s.kartikeya18@gmail.com")) {
                 user.setRole(UserRole.ADMIN);
             } else {
                 user.setRole(UserRole.USER);
             }
-
-            Directory rootDirectory = directoryService.createDirectory("Root|" + user.getId() + "|" + user.getName(), null);
-            user.setRootDirectory(rootDirectory);
             return userRepository.save(user);
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -57,7 +52,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public User authenticateUser(@NonNull String email, @NonNull String password) {
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
-        return userRepository.findByEmail(email);
+        return userRepository.findByEmail(email).orElse(null);
     }
 
     @Override
@@ -80,7 +75,12 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User getUserByEmail(@NonNull String email) {
-        return userRepository.findByEmail(email);
+        return userRepository.findByEmail(email).orElse(null);
+    }
+
+    @Override
+    public List<User> getUsersByEmails(@NonNull List<String> emails) {
+        return userRepository.findAllByEmail(emails);
     }
 
     @Override

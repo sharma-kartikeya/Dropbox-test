@@ -1,6 +1,6 @@
 package com.dropbox.DropboxTest.controllers.user.responses;
 
-import com.dropbox.DropboxTest.models.User;
+import com.dropbox.DropboxTest.models.user.User;
 import lombok.Data;
 import lombok.NonNull;
 
@@ -22,6 +22,6 @@ public class UserResponse {
         this.name = user.getName();
         this.email = user.getEmail();
         this.phone = user.getPhone();
-        this.rootDirectoryId = user.getRootDirectory().getId();
+        this.rootDirectoryId = user.getRootDirectoryId();
     }
 }

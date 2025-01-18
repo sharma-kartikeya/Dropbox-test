@@ -1,7 +1,5 @@
-package com.dropbox.DropboxTest.models;
+package com.dropbox.DropboxTest.models.directory;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NonNull;
@@ -12,26 +10,19 @@ import java.util.UUID;
 @Data
 @Entity
 @Table(name = "directories")
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Directory {
     @Id
     @NonNull
-    @Column(name = "id", nullable = false, updatable = false, unique = true)
+    @Column(nullable = false, updatable = false, unique = true)
     private String id;
 
     @NonNull
     @Column(nullable = false)
     private String name;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "parent_id")
-    @JsonIgnore
-    private Directory parent;
+    private String parentId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "owner_id")
-    @JsonIgnore
-    private User owner;
+    private String ownerId;
 
     @NonNull
     @Column(nullable = false)
@@ -39,10 +30,10 @@ public class Directory {
 
     private String key;
 
-    @Column(name = "created_at", updatable = false)
+    @Column(updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    @Column(name = "updated_at")
+    @Column()
     private LocalDateTime updatedAt = LocalDateTime.now();
 
     @PreUpdate
